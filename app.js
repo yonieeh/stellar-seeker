@@ -29,30 +29,30 @@ bot.registerCommand("pong", ["Pang!", "Peng!", "Ping!", "Pung!"], {
 });
 
 
-const dataFile = "./data.json";
+const welcomeMessagesFile = "./welcomeMessages.json";
 
-if (!existsSync(dataFile)) {
-  writeFileSync(dataFile, "{}");
+if (!existsSync(welcomeMessagesFile)) {
+  writeFileSync(welcomeMessagesFile, "{}");
 }
 
 function saveWelcomeMessages(userID, messageID) {
   const timestamp = Date.now();
-  const welcomeMessages = JSON.parse(readFileSync(dataFile));
+  const welcomeMessages = JSON.parse(readFileSync(welcomeMessagesFile));
 
   welcomeMessages[userID] = { messageID, timestamp };
 
-  writeFileSync(dataFile, JSON.stringify(welcomeMessages, null, 2));
+  writeFileSync(welcomeMessagesFile, JSON.stringify(welcomeMessages, null, 2));
   console.log(`Stored welcome message for ${userID}: ${messageID}`);
 }
 
 function deleteWelcomeMessages(userID, channelID) {
-  const welcomeMessages = JSON.parse(readFileSync(dataFile));
+  const welcomeMessages = JSON.parse(readFileSync(welcomeMessagesFile));
   const messageData = welcomeMessages[userID];
   if (messageData) {
     const { messageID } = messageData; 
     bot.deleteMessage(channelID, messageID).catch(console.error);
     delete welcomeMessages[userID];
-    writeFileSync(dataFile, JSON.stringify(welcomeMessages, null, 2));
+    writeFileSync(welcomeMessagesFile, JSON.stringify(welcomeMessages, null, 2));
     console.log(`Deleted welcome message for ${userID}: ${messageID}`);
   }
 }
@@ -60,7 +60,7 @@ function deleteWelcomeMessages(userID, channelID) {
 function deleteOldWelcomeMessages(period) {
   const currentTimestamp = Date.now();
   const expirationTimestamp = period * 24 * 60 * 60 * 1000;
-  const welcomeMessages = JSON.parse(readFileSync(dataFile));
+  const welcomeMessages = JSON.parse(readFileSync(welcomeMessagesFile));
 
   for (const [userID, { messageID, timestamp }] of Object.entries(welcomeMessages)) {
     if (currentTimestamp - timestamp > expirationTimestamp) {
@@ -68,70 +68,37 @@ function deleteOldWelcomeMessages(period) {
     }
   }
 
-  writeFileSync(dataFile, JSON.stringify(welcomeMessages, null, 2));
+  writeFileSync(welcomeMessagesFile, JSON.stringify(welcomeMessages, null, 2));
 }
 
 bot.on("guildMemberAdd", (guild, member) => {
   console.log(`${member.username} has joined the server!`);
-  
-  if (guild.id === "915709191879020664") { // test server
-    const embed = {
-      title: "welcome 🦦",
-      description: "✨ check out the rules in <#1319901737972269076>\n✨ assign yourself roles in <#1319901782280900618>\n✨ vote in decisions for the server in <#1321233121479491645>",
-      color: 0x7289da, 
-      thumbnail: {
-        url: member.avatarURL 
-      }
-    };
+  const embed = {
+    title: "welcome 🦦",
+    description: "✨ check out the rules in <#1311157085894873190>\n✨ assign yourself roles in <#1311885275902771212>\n✨ vote in decisions for the server in <#1311845120127012975>",
+    color: 0x7289da, 
+    thumbnail: {
+      url: member.avatarURL 
+    }
+  };
 
-    bot.createMessage(1319566715042005044n, {
-      content:`** **                          ‧͙⁺˚･༓☾stellar://grove☽༓･˚⁺‧͙ \n ** **                                       <@${member.id}>`,
-      embeds: [embed] 
-    }).then((message) => {
-      saveWelcomeMessages(member.id, message.id);
-      console.log(`Stored welcome message for ${member.username}: ${message.id}`);
-    }).catch(console.error);
-
-    bot.createMessage(1319566683047727157n, {
-      content:`welcome to stellar grove ${member.id}! make sure to read the faq and the rules, and enjoy your stay!` 
-    }, {
-      file: readFileSync("./assets/welcome-image.png"),
-      name: "welcome.png"
-    });
-
-  } else if (guild.id === "968340299132858420") { // main server
-    const embed = {
-      title: "welcome 🦦",
-      description: "✨ check out the rules in <#1311157085894873190>\n✨ assign yourself roles in <#1311885275902771212>\n✨ vote in decisions for the server in <#1311845120127012975>",
-      color: 0x7289da, 
-      thumbnail: {
-        url: member.avatarURL 
-      }
-    };
-
-    bot.createMessage(1311157095034388661n, {
-      content:`** **                          ‧͙⁺˚･༓☾stellar://grove☽༓･˚⁺‧͙ \n ** **                                       <@${member.id}>`,
-      embeds: [embed] 
-    }).then((message) => {
-      saveWelcomeMessages(member.id, message.id);
-    }).catch(console.error);
+  bot.createMessage(1311157095034388661n, {
+    content:`** **                          ‧͙⁺˚･༓☾stellar://grove☽༓･˚⁺‧͙ \n ** **                                       <@${member.id}>`,
+    embeds: [embed] 
+  }).then((message) => {
+    saveWelcomeMessages(member.id, message.id);
+  }).catch(console.error);
     
-    //bot.createMessage(1311157094044405871n, {
-    //  content:`welcome to stellar grove ${member.id}! make sure to read the faq and the rules, and enjoy your stay!` 
-    //}, {
-    //  file: readFileSync("./assets/welcome-image.png"),
-    //  name: "welcome.png"
-    //});
-  }
-    
+  //bot.createMessage(1311157094044405871n, {
+  //  content:`welcome to stellar grove ${member.id}! make sure to read the faq and the rules, and enjoy your stay!` 
+  //}, {
+  //  file: readFileSync("./assets/welcome-image.png"),
+  //  name: "welcome.png"
+  //}); 
 });
 
 bot.on("guildMemberRemove", (guild, member) => {
-  if (guild.id === "915709191879020664") { // test server
-    deleteWelcomeMessages(member.id, 1319566715042005044n);
-  } else if (guild.id === "968340299132858420") { // main server
-    deleteWelcomeMessages(member.id, 1311157095034388661n);
-  }
+  deleteWelcomeMessages(member.id, 1311157095034388661n);
 });
 
 setInterval(() => {
